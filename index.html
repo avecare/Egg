@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>تسجيل جمع البيض</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      direction: rtl;
+      text-align: center;
+    }
+
+    h1 {
+      color: #4CAF50;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      font-size: 18px;
+      width: 200px;
+      margin: 10px;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      background-color: white;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>تسجيل جمع البيض اليومي</h1>
+
+  <input type="number" id="eggCount" placeholder="عدد البيض اليوم" min="0">
+  <button onclick="addEntry()">إدخال</button>
+
+  <table id="eggTable">
+    <thead>
+      <tr>
+        <th>رقم الترميز</th>
+        <th>التاريخ</th>
+        <th>عدد البيض</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- سيتم ملء البيانات هنا -->
+    </tbody>
+  </table>
+
+  <script>
+    let entries = [];
+
+    function getTodayDate() {
+      const today = new Date();
+      return today.toLocaleDateString('ar-EG');
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem("eggEntries", JSON.stringify(entries));
+    }
+
+    function loadFromLocalStorage() {
+      const data = localStorage.getItem("eggEntries");
+      if (data) {
+        entries = JSON.parse(data);
+        entries.forEach((entry, index) => {
+          insertRow(index + 1, entry.date, entry.count);
+        });
+      }
+    }
+
+    function insertRow(code, date, count) {
+      const table = document.getElementById("eggTable").getElementsByTagName('tbody')[0];
+      const newRow = table.insertRow();
+
+      newRow.insertCell(0).textContent = code;
+      newRow.insertCell(1).textContent = date;
+      newRow.insertCell(2).textContent = count;
+    }
+
+    function addEntry() {
+      const eggInput = document.getElementById("eggCount");
+      const count = eggInput.value;
+
+      if (count === "" || parseInt(count) < 0) {
+        alert("يرجى إدخال عدد صحيح للبيض.");
+        return;
+      }
+
+      const date = getTodayDate();
+      const newEntry = { date, count };
+      entries.push(newEntry);
+      saveToLocalStorage();
+
+      insertRow(entries.length, date, count);
+
+      eggInput.value = "";
+      eggInput.focus();
+    }
+
+    // تحميل البيانات عند فتح الصفحة
+    window.onload = loadFromLocalStorage;
+  </script>
+
+</body>
+</html>
