@@ -16,15 +16,12 @@
       color: #4CAF50;
     }
 
-    input, select {
+    input {
       padding: 10px;
       font-size: 16px;
       margin: 10px;
       border: 2px solid #ccc;
       border-radius: 5px;
-    }
-
-    input[type="number"], input[type="date"], select {
       width: 200px;
     }
 
@@ -71,6 +68,11 @@
     .delete-btn:hover {
       background-color: #c0392b;
     }
+
+    tfoot td {
+      font-weight: bold;
+      background-color: #fafafa;
+    }
   </style>
 </head>
 <body>
@@ -79,13 +81,7 @@
 
   <input type="number" id="eggCount" placeholder="عدد البيض" min="0">
   <input type="date" id="eggDate">
-  <select id="chickenType">
-    <option value="">اختر نوع الدجاج</option>
-    <option value="بلدي">بلدي</option>
-    <option value="هجين">هجين</option>
-    <option value="براهما">براهما</option>
-    <option value="آخر">آخر</option>
-  </select>
+  <input type="text" id="chickenType" placeholder="نوع الدجاج">
   <button onclick="addEntry()">إدخال</button>
 
   <table id="eggTable">
@@ -99,8 +95,15 @@
       </tr>
     </thead>
     <tbody>
-      <!-- سيتم ملء البيانات هنا -->
+      <!-- البيانات تملأ هنا -->
     </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2">المجموع</td>
+        <td id="totalEggs">0</td>
+        <td colspan="2"></td>
+      </tr>
+    </tfoot>
   </table>
 
   <script>
@@ -119,11 +122,13 @@
     }
 
     function updateTable() {
-      const table = document.getElementById("eggTable").getElementsByTagName('tbody')[0];
-      table.innerHTML = "";
-      entries.forEach((entry, index) => {
-        const newRow = table.insertRow();
+      const tbody = document.getElementById("eggTable").getElementsByTagName('tbody')[0];
+      const totalCell = document.getElementById("totalEggs");
+      tbody.innerHTML = "";
+      let total = 0;
 
+      entries.forEach((entry, index) => {
+        const newRow = tbody.insertRow();
         newRow.insertCell(0).textContent = index + 1;
         newRow.insertCell(1).textContent = entry.date;
         newRow.insertCell(2).textContent = entry.count;
@@ -135,13 +140,17 @@
         deleteBtn.className = "delete-btn";
         deleteBtn.onclick = () => deleteEntry(index);
         deleteCell.appendChild(deleteBtn);
+
+        total += parseInt(entry.count);
       });
+
+      totalCell.textContent = total;
     }
 
     function addEntry() {
       const count = document.getElementById("eggCount").value;
       const date = document.getElementById("eggDate").value;
-      const type = document.getElementById("chickenType").value;
+      const type = document.getElementById("chickenType").value.trim();
 
       if (!count || count < 0) {
         alert("يرجى إدخال عدد صحيح للبيض.");
@@ -154,7 +163,7 @@
       }
 
       if (!type) {
-        alert("يرجى اختيار نوع الدجاج.");
+        alert("يرجى كتابة نوع الدجاج.");
         return;
       }
 
