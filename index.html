@@ -16,18 +16,21 @@
       color: #4CAF50;
     }
 
-    input[type="number"] {
+    input, select {
       padding: 10px;
-      font-size: 18px;
-      width: 200px;
+      font-size: 16px;
       margin: 10px;
       border: 2px solid #ccc;
       border-radius: 5px;
     }
 
+    input[type="number"], input[type="date"], select {
+      width: 200px;
+    }
+
     button {
       padding: 10px 20px;
-      font-size: 18px;
+      font-size: 16px;
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -55,13 +58,34 @@
     th {
       background-color: #f0f0f0;
     }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
   </style>
 </head>
 <body>
 
   <h1>تسجيل جمع البيض اليومي</h1>
 
-  <input type="number" id="eggCount" placeholder="عدد البيض اليوم" min="0">
+  <input type="number" id="eggCount" placeholder="عدد البيض" min="0">
+  <input type="date" id="eggDate">
+  <select id="chickenType">
+    <option value="">اختر نوع الدجاج</option>
+    <option value="بلدي">بلدي</option>
+    <option value="هجين">هجين</option>
+    <option value="براهما">براهما</option>
+    <option value="آخر">آخر</option>
+  </select>
   <button onclick="addEntry()">إدخال</button>
 
   <table id="eggTable">
@@ -70,6 +94,8 @@
         <th>رقم الترميز</th>
         <th>التاريخ</th>
         <th>عدد البيض</th>
+        <th>نوع الدجاج</th>
+        <th>حذف</th>
       </tr>
     </thead>
     <tbody>
@@ -80,11 +106,6 @@
   <script>
     let entries = [];
 
-    function getTodayDate() {
-      const today = new Date();
-      return today.toLocaleDateString('ar-EG');
-    }
-
     function saveToLocalStorage() {
       localStorage.setItem("eggEntries", JSON.stringify(entries));
     }
@@ -93,42 +114,68 @@
       const data = localStorage.getItem("eggEntries");
       if (data) {
         entries = JSON.parse(data);
-        entries.forEach((entry, index) => {
-          insertRow(index + 1, entry.date, entry.count);
-        });
+        updateTable();
       }
     }
 
-    function insertRow(code, date, count) {
+    function updateTable() {
       const table = document.getElementById("eggTable").getElementsByTagName('tbody')[0];
-      const newRow = table.insertRow();
+      table.innerHTML = "";
+      entries.forEach((entry, index) => {
+        const newRow = table.insertRow();
 
-      newRow.insertCell(0).textContent = code;
-      newRow.insertCell(1).textContent = date;
-      newRow.insertCell(2).textContent = count;
+        newRow.insertCell(0).textContent = index + 1;
+        newRow.insertCell(1).textContent = entry.date;
+        newRow.insertCell(2).textContent = entry.count;
+        newRow.insertCell(3).textContent = entry.type;
+
+        const deleteCell = newRow.insertCell(4);
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "حذف";
+        deleteBtn.className = "delete-btn";
+        deleteBtn.onclick = () => deleteEntry(index);
+        deleteCell.appendChild(deleteBtn);
+      });
     }
 
     function addEntry() {
-      const eggInput = document.getElementById("eggCount");
-      const count = eggInput.value;
+      const count = document.getElementById("eggCount").value;
+      const date = document.getElementById("eggDate").value;
+      const type = document.getElementById("chickenType").value;
 
-      if (count === "" || parseInt(count) < 0) {
+      if (!count || count < 0) {
         alert("يرجى إدخال عدد صحيح للبيض.");
         return;
       }
 
-      const date = getTodayDate();
-      const newEntry = { date, count };
+      if (!date) {
+        alert("يرجى اختيار التاريخ.");
+        return;
+      }
+
+      if (!type) {
+        alert("يرجى اختيار نوع الدجاج.");
+        return;
+      }
+
+      const newEntry = { date, count, type };
       entries.push(newEntry);
       saveToLocalStorage();
+      updateTable();
 
-      insertRow(entries.length, date, count);
-
-      eggInput.value = "";
-      eggInput.focus();
+      document.getElementById("eggCount").value = "";
+      document.getElementById("eggDate").value = "";
+      document.getElementById("chickenType").value = "";
     }
 
-    // تحميل البيانات عند فتح الصفحة
+    function deleteEntry(index) {
+      if (confirm("هل أنت متأكد من حذف هذا السجل؟")) {
+        entries.splice(index, 1);
+        saveToLocalStorage();
+        updateTable();
+      }
+    }
+
     window.onload = loadFromLocalStorage;
   </script>
 
